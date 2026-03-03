@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Pokemon, PokemonListResponse } from "../types/Pokemon";
 import api from "../api/api";
 interface FilterProps {
@@ -8,28 +8,9 @@ interface FilterProps {
 
 export default function Filter({ setPokemons, pokemons }: FilterProps) {
 	const [name, setName] = useState("");
-
-	function filtrar() {
-		if (!name.trim()) {
-			setPokemons(pokemons);
-			return;
-		}
-
-		const filtrados = pokemons.filter((item) =>
-			item.name.toLowerCase().includes(name.toLowerCase()),
-		);
-
-		setPokemons(filtrados);
-	}
-
-	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-		if (e.key === "Enter") {
-			filtrar();
-		}
-	}
-
 	function resetFilter() {
 		async function fetchPokemons() {
+			setName("");
 			try {
 				const response =
 					await api.get<PokemonListResponse>("/pokemon?limit=151");
@@ -48,6 +29,30 @@ export default function Filter({ setPokemons, pokemons }: FilterProps) {
 		}
 
 		fetchPokemons();
+	}
+	useEffect(() => {
+		if (name === "") {
+			resetFilter();
+		}
+	}, [name]);
+
+	function filtrar() {
+		if (!name.trim()) {
+			setPokemons(pokemons);
+			return;
+		}
+
+		const filtrados = pokemons.filter((item) =>
+			item.name.toLowerCase().includes(name.toLowerCase()),
+		);
+
+		setPokemons(filtrados);
+	}
+
+	function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+		if (e.key === "Enter") {
+			filtrar();
+		}
 	}
 
 	return (

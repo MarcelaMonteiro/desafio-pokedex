@@ -1,33 +1,22 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import type { Pokemon } from "../types/Pokemon";
-import axios from "axios";
 import CardDetails from "../components/CardDetails";
-import { Link } from "react-router-dom";
 
 export default function PokemonDetail() {
 	const { name } = useParams();
 
 	const [pokemon, setPokemon] = useState<Pokemon | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		async function fetchPokemon() {
 			try {
 				const response = await api.get<Pokemon>(`/pokemon/${name}`);
 				setPokemon(response.data);
-			} catch (err) {
-				if (axios.isAxiosError(err)) {
-					setError(
-						err.response?.data?.message ||
-							err.message ||
-							"Erro ao buscar Pokémon",
-					);
-				} else {
-					setError("Erro inesperado");
-				}
+			} catch (error) {
+				console.error(error);
 			} finally {
 				setLoading(false);
 			}
@@ -36,14 +25,31 @@ export default function PokemonDetail() {
 		fetchPokemon();
 	}, [name]);
 
-	if (loading) return <p>Carregando...</p>;
-	if (error) return <p>{error}</p>;
-	if (!pokemon) return <p>Pokémon não encontrado</p>;
+	if (loading)
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<p className="text-xl font-semibold animate-pulse">Carregando...</p>
+			</div>
+		);
+
+	if (!pokemon)
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<p>Pokémon não encontrado</p>
+			</div>
+		);
 
 	return (
-		<div className="flex flex-col items-center justify-center h-screen">
-			<Link to="/"> Voltar para Home</Link>
-			<CardDetails pokemon={pokemon} />
+		<div className="min-h-screen bg-gray-100 pt-6 pl-6">
+			<div className="mb-6">
+				<Link to="/" className=" font-semibold hover:underline">
+					← Voltar para Home
+				</Link>
+			</div>
+
+			<div className="flex justify-center">
+				<CardDetails pokemon={pokemon} />
+			</div>
 		</div>
 	);
 }
